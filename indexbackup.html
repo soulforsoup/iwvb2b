@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IWantVeggies Wholesale Pricing</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/favicon.png" type="image/png">
+</head>
+<body>
+    <header>
+        <img src="images/iwantveggies.png" alt="IWantVeggies Logo" class="logo">
+        <h1>IWantVeggies Wholesale Pricing</h1>
+        <button id="downloadBtn">Download Catalog</button>
+    </header>
+    <main>
+        <input type="text" id="searchBar" placeholder="Search products..." class="sticky-search">
+        <div class="table-container">
+            <table id="productTable">
+                <thead>
+                    <tr>
+                        <th data-column="productName">Product/Service Name</th>
+                        <th data-column="unitOfMeasure">Unit of Measure</th>
+                        <th data-column="salesPrice">Sales Price / Rate</th>
+                        <th data-column="indent">Indent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Product data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
