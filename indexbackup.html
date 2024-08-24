@@ -6,12 +6,29 @@
     <title>IWantVeggies Wholesale Pricing</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="images/favicon.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        function getCurrentDate() {
+            const now = new Date();
+            const options = { timeZone: 'Asia/Singapore' };
+            return now.toLocaleDateString('en-GB', options);
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('generatedDate').textContent = getCurrentDate();
+        });
+    </script>
 </head>
 <body>
     <header>
-        <img src="images/iwantveggies.png" alt="IWantVeggies Logo" class="logo">
-        <h1>IWantVeggies Wholesale Pricing</h1>
-        <button id="downloadBtn">Download Catalog</button>
+        <div class="header-left">
+            <img src="images/iwantveggies.png" alt="IWantVeggies Logo" class="logo">
+            <h1>IWantVeggies Wholesale Pricing</h1>
+        </div>
+        <div class="header-buttons">
+            <button id="contactBtn"><i class="fas fa-phone"></i> Contact Us</button>
+            <button id="downloadBtn">Download <i class="fas fa-download"></i></button>
+            <button id="themeToggle"><i class="fas fa-moon"></i></button>
+        </div>
     </header>
     <main>
         <input type="text" id="searchBar" placeholder="Search products..." class="sticky-search">
@@ -31,6 +48,20 @@
             </table>
         </div>
     </main>
+    <footer>
+        <div class="note">
+            <p><strong>Note:</strong></p>
+            <ul>
+                <li>Minimum order value of $80.</li>
+                <li>The prices listed in this document are accurate as of the generated date.</li>
+                <li>Items checked in the "Indent" column require additional lead time from the order date.</li>
+                <li>Prices are subject to change without notice due to market conditions.</li>
+                <li>We are not GST registered, hence all prices quoted above are nett.</li>
+                <li>Need an item that is not on this list? Do enquire with us.</li>
+            </ul>
+            <p>Pricelist generated on: <span id="generatedDate"></span></p>
+        </div>
+    </footer>
     <script src="script.js"></script>
 </body>
 </html>

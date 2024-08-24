@@ -15,12 +15,22 @@ header {
     align-items: center;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
 h1 {
     margin: 0 0 0 10px; /* Adjusted to be closer to the logo */
 }
 
 .logo {
     height: 100px; /* Adjusted to 100px */
+}
+
+.header-buttons {
+    display: flex;
+    align-items: center;
 }
 
 button {
@@ -31,6 +41,7 @@ button {
     cursor: pointer;
     transition: background-color 0.3s;
     border-radius: 20px;
+    margin-left: 10px;
 }
 
 button:hover {
@@ -50,6 +61,9 @@ main {
     top: 0;
     background-color: #f9f9f9;
     z-index: 1000;
+    border-radius: 20px; /* Rounded edges */
+    border: 1px solid #ddd;
+    margin-top: 0.5rem; /* Adjusted space on top */
 }
 
 .table-container {
@@ -95,7 +109,7 @@ th:nth-child(4), td:nth-child(4) {
 @media (max-width: 768px) {
     header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
     }
 
     .logo {
@@ -106,7 +120,7 @@ th:nth-child(4), td:nth-child(4) {
         margin: 10px 0 0 0; /* Adjusted for smaller screens */
     }
 
-    button {
+    .header-buttons {
         margin-top: 10px;
     }
 
@@ -131,4 +145,67 @@ th:nth-child(4), td:nth-child(4) {
     th, td {
         padding: 0.2rem;
     }
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+body.dark-mode header {
+    background-color: #1f1f1f;
+}
+
+body.dark-mode button {
+    background-color: #333;
+    color: #ffffff;
+}
+
+body.dark-mode button:hover {
+    background-color: #444;
+}
+
+body.dark-mode .sticky-search {
+    background-color: #121212;
+    color: #ffffff;
+    border-color: #333;
+}
+
+body.dark-mode table {
+    background-color: #1f1f1f;
+}
+
+body.dark-mode th, body.dark-mode td {
+    border-bottom: 1px solid #333;
+}
+
+body.dark-mode th {
+    background-color: #333;
+}
+
+/* Footer Styles */
+footer {
+    background-color: #009048;
+    color: white;
+    padding: 1rem;
+    border-top: 1px solid #ddd;
+}
+
+footer.dark-mode {
+    background-color: #1f1f1f;
+    border-color: #333;
+}
+
+.note {
+    font-size: 0.9rem;
+}
+
+.note ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.note li {
+    margin-bottom: 0.5rem;
 }

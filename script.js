@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('downloadBtn');
     const searchBar = document.getElementById('searchBar');
     const productTable = document.getElementById('productTable').getElementsByTagName('tbody')[0];
+    const themeToggle = document.getElementById('themeToggle');
+    const contactBtn = document.getElementById('contactBtn');
 
     let products = [];
 
@@ -59,6 +61,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Download button functionality
     downloadBtn.addEventListener('click', () => {
-        window.location.href = 'https://docs.google.com/spreadsheets/d/1m4-xtrkYzrqrTQkqIyxjXJocSuz3NX548exzHUVx_m8/pub?gid=1107268124&single=true&output=pdf';
+        window.print(); // This will trigger the print dialog to save as PDF
     });
+
+    // Contact Us button functionality
+    contactBtn.addEventListener('click', () => {
+        window.location.href = 'https://wa.me/+6587680491';
+    });
+
+    // Dark mode toggle functionality
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        document.querySelector('footer').classList.toggle('dark-mode');
+        const icon = themeToggle.querySelector('i');
+        if (document.body.classList.contains('dark-mode')) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        } else {
+            icon.classList.remove('fa-sun');
+            icon.classList.add('fa-moon');
+        }
+        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    });
+
+    // Check for user's preference
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.querySelector('footer').classList.add('dark-mode');
+        const icon = themeToggle.querySelector('i');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+    }
 });
