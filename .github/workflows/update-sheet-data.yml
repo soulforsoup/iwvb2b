@@ -22,4 +22,20 @@ jobs:
           POCKETHOST_URL: ${{ secrets.POCKETHOST_URL }}
           POCKETHOST_EMAIL: ${{ secrets.POCKETHOST_EMAIL }}
           POCKETHOST_PASSWORD: ${{ secrets.POCKETHOST_PASSWORD }}
-        run: node updateSheetData.js
+        run: |
+          node -e "console.log('Node.js version:', process.version)"
+          node -e "console.log('NPM version:', require('child_process').execSync('npm -v').toString().trim())"
+          node -e "console.log('Current working directory:', process.cwd())"
+          node -e "console.log('Directory contents:', require('fs').readdirSync('.'))"
+          node -e "console.log('package.json contents:', require('fs').readFileSync('package.json', 'utf8'))"
+          node updateSheetData.js
+        continue-on-error: true
+      - name: Check for errors
+        if: failure()
+        run: |
+          if [ -f npm-debug.log ]; then
+            echo "NPM Debug Log:"
+            cat npm-debug.log
+          fi
+          echo "Last 100 lines of updateSheetData.js output:"
+          tail -n 100 $GITHUB_WORKSPACE/updateSheetData.log
