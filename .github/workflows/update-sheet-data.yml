@@ -2,24 +2,24 @@ name: Update Sheet Data
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs at 00:00 UTC every day
-  workflow_dispatch:  # Allows manual triggering
+    - cron: "0 0 * * *" # Runs at 00:00 UTC every day
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
-    - name: Install dependencies
-      run: npm install
-    - name: Run update script
-      env:
-        GOOGLE_SHEETS_API_KEY: ${{ secrets.GOOGLE_SHEETS_API_KEY }}
-        POCKETHOST_URL: ${{ secrets.POCKETHOST_URL }}
-        POCKETHOST_EMAIL: ${{ secrets.POCKETHOST_EMAIL }}
-        POCKETHOST_PASSWORD: ${{ secrets.POCKETHOST_PASSWORD }}
-      run: node updateSheetData.js
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run update script
+        env:
+          GOOGLE_SHEETS_API_KEY: ${{ secrets.GOOGLE_SHEETS_API_KEY }}
+          POCKETHOST_URL: ${{ secrets.POCKETHOST_URL }}
+          POCKETHOST_EMAIL: ${{ secrets.POCKETHOST_EMAIL }}
+          POCKETHOST_PASSWORD: ${{ secrets.POCKETHOST_PASSWORD }}
+        run: node updateSheetData.js
