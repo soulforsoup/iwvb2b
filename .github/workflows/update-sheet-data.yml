@@ -2,7 +2,7 @@ name: Update Sheet Data
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs at 00:00 UTC every day
+    - cron: "0 * * * *" # Runs at the start of every hour
   workflow_dispatch: # Allows manual triggering
 
 jobs:
@@ -29,13 +29,3 @@ jobs:
           node -e "console.log('Directory contents:', require('fs').readdirSync('.'))"
           node -e "console.log('package.json contents:', require('fs').readFileSync('package.json', 'utf8'))"
           node updateSheetData.js
-        continue-on-error: true
-      - name: Check for errors
-        if: failure()
-        run: |
-          if [ -f npm-debug.log ]; then
-            echo "NPM Debug Log:"
-            cat npm-debug.log
-          fi
-          echo "Last 100 lines of updateSheetData.js output:"
-          tail -n 100 $GITHUB_WORKSPACE/updateSheetData.log
