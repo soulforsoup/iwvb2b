@@ -1,10 +1,12 @@
+import PocketBase from "https://unpkg.com/pocketbase@0.21.1/dist/pocketbase.es.mjs";
+
 document.addEventListener("DOMContentLoaded", () => {
   const downloadBtn = document.getElementById("downloadBtn");
   const headerSearchBar = document.getElementById("headerSearchBar");
   const bottomSearchBar = document.getElementById("bottomSearchBar");
   const headerClearSearch = document.getElementById("headerClearSearch");
   const bottomClearSearch = document.getElementById("bottomClearSearch");
-  const productTable = document.querySelector("#productTable tbody");
+  const productTable = document.querySelector("#productTable");
   const themeToggle = document.getElementById("themeToggle");
   const contactBtn = document.getElementById("contactBtn");
   const loadingSpinner = document.getElementById("loadingSpinner");
@@ -18,36 +20,35 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentSearchTerm = "";
   let isPreparingPrint = false;
 
-  // Updated Google Spreadsheet ID and API key
-  const googleSpreadsheetId = "1TF2hAiXg5KfLARRnVSdT0YroW3su0f3K-iERs2RZjAw";
-  const apiKey = "AIzaSyBn1cNKwaNPl9WeK8_gQtU0p8ieBg0pUjQ";
-  const sheetName = "Sheet1";
-  const googleSheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${googleSpreadsheetId}/values/${sheetName}!A1:D?key=${apiKey}`;
+  const pb = new PocketBase("https://iwvb2b.pockethost.io");
 
-  // Show loading spinner
+  async function fetchProducts() {
+    try {
+      const records = await pb.collection("wholesalepricelist").getFullList({
+        sort: "productName",
+      });
+      return records.map((record) => ({
+        productName: record.productName,
+        unitOfMeasure: record.unitOfMeasure,
+        salesPrice: record.salesPrice,
+        indent:
+          record.indent === true ||
+          record.indent === "true" ||
+          record.indent === 1,
+      }));
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      throw error;
+    }
+  }
+
   loadingSpinner.style.display = "block";
 
-  // Fetch data from Google Sheet
-  fetch(googleSheetUrl)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
-      }
-      return response.json();
-    })
-    .then((data) => {
+  fetchProducts()
+    .then((products) => {
       loadingSpinner.style.display = "none";
-      if (data.values) {
-        allProducts = data.values.slice(1).map((row) => ({
-          productName: row[0] ? row[0].toString() : "",
-          unitOfMeasure: row[1] ? row[1].toString() : "",
-          salesPrice: row[2] ? row[2].toString() : "",
-          indent: row[3] === "TRUE",
-        }));
-        updateProductDisplay();
-      } else {
-        throw new Error("No data found in the sheet.");
-      }
+      allProducts = products;
+      updateProductDisplay();
     })
     .catch((error) => {
       loadingSpinner.style.display = "none";
@@ -60,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
     removeAnimationClasses();
     let displayedProducts = allProducts;
 
-    // Apply search filter
     if (currentSearchTerm) {
       displayedProducts = displayedProducts.filter((product) =>
         product.productName
@@ -69,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    // Apply sort
     if (currentSortColumn) {
       displayedProducts.sort((a, b) => {
         if (currentSortColumn === "indent") {
@@ -109,11 +108,11 @@ document.addEventListener("DOMContentLoaded", () => {
       products.forEach((product) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-                <td>${product.productName}</td>
-                <td>${product.unitOfMeasure}</td>
-                <td>${product.salesPrice}</td>
-                <td>${product.indent ? "✓" : ""}</td>
-            `;
+          <td>${product.productName}</td>
+          <td>${product.unitOfMeasure}</td>
+          <td>${product.salesPrice}</td>
+          <td>${product.indent ? "✓" : ""}</td>
+        `;
         fragment.appendChild(row);
       });
       productTable.appendChild(fragment);
@@ -183,29 +182,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isPreparingPrint) {
       isPreparingPrint = true;
 
-      // Store current state
       const originalTableHTML = productTable.innerHTML;
 
-      // Render all products without filters or sorting
       renderProducts(allProducts);
 
-      // Update the print date
       updatePrintDate();
 
-      // Temporarily remove dark mode for printing
       const isDarkMode = document.body.classList.contains("dark-mode");
       if (isDarkMode) {
         document.body.classList.remove("dark-mode");
       }
 
-      // Use setTimeout to allow the DOM to update before printing
       setTimeout(() => {
         window.print();
 
-        // After printing, restore the original state
         productTable.innerHTML = originalTableHTML;
 
-        // Restore dark mode if it was active
         if (isDarkMode) {
           document.body.classList.add("dark-mode");
         }
@@ -268,6 +260,16 @@ document.addEventListener("DOMContentLoaded", () => {
       el.classList.remove("fade-in");
     });
   }
+
+  function updateGeneratedDate() {
+    const generatedDateElement = document.getElementById("generatedDate");
+    if (generatedDateElement) {
+      const currentDate = new Date().toLocaleDateString("en-GB");
+      generatedDateElement.textContent = currentDate;
+    }
+  }
+
+  updateGeneratedDate();
 });
 
 function getCurrentDate() {
