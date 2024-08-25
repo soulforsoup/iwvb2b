@@ -1,9 +1,27 @@
 import PocketBase from "pocketbase";
 import fetch from "node-fetch";
 import cliProgress from "cli-progress";
+import fs from "fs";
+import { setTimeout } from "timers/promises";
 
 const pb = new PocketBase(process.env.POCKETHOST_URL);
 const COLLECTION_NAME = "wholesalepricelist";
+
+async function retryOperation(operation, maxRetries = 3, delay = 1000) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (error.status === 429 && i < maxRetries - 1) {
+        console.log(`Rate limit hit, retrying in ${delay}ms...`);
+        await setTimeout(delay);
+        delay *= 2; // Exponential backoff
+      } else {
+        throw error;
+      }
+    }
+  }
+}
 
 async function updateSheetData() {
   try {
@@ -25,11 +43,19 @@ async function updateSheetData() {
     const range = "A1:D";
 
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}!${range}?key=${apiKey}`;
+    console.log(
+      "Fetching data from URL:",
+      url.replace(apiKey, "API_KEY_HIDDEN"),
+    );
 
     console.log("Fetching data from Google Sheets...");
     const response = await fetch(url);
 
     if (!response.ok) {
+      console.error("Response status:", response.status);
+      console.error("Response status text:", response.statusText);
+      const responseText = await response.text();
+      console.error("Response body:", responseText);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -45,6 +71,10 @@ async function updateSheetData() {
     }
   } catch (error) {
     console.error("Error updating data:", error);
+    fs.appendFileSync(
+      "updateSheetData.log",
+      `Error: ${error}\n${error.stack}\n`,
+    );
     process.exit(1);
   }
 }
@@ -97,49 +127,63 @@ async function updateData(rows) {
   let insertedCount = 0;
   let unchangedCount = 0;
 
-  for (let [index, row] of rows.entries()) {
-    try {
-      const productName = row[0] || "";
-      const newData = {
-        productName: productName,
-        unitOfMeasure: row[1] || "",
-        salesPrice: row[2] || "",
-        indent: row[3] === "TRUE",
-      };
+  const batchSize = 50;
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = rows.slice(i, i + batchSize);
+    await retryOperation(async () => {
+      const promises = batch.map(async (row) => {
+        try {
+          const productName = row[0] || "";
+          const newData = {
+            productName: productName,
+            unitOfMeasure: row[1] || "",
+            salesPrice: row[2] || "",
+            indent: row[3] === "TRUE",
+          };
 
-      // Try to find an existing record
-      const existingRecords = await pb.collection(COLLECTION_NAME).getFullList({
-        filter: `productName = "${productName}"`,
-      });
-
-      if (existingRecords.length > 0) {
-        const existingRecord = existingRecords[0];
-        // Check if the record needs updating
-        if (
-          JSON.stringify(newData) !==
-          JSON.stringify({
-            productName: existingRecord.productName,
-            unitOfMeasure: existingRecord.unitOfMeasure,
-            salesPrice: existingRecord.salesPrice,
-            indent: existingRecord.indent,
-          })
-        ) {
-          await pb
+          // Try to find an existing record
+          const existingRecords = await pb
             .collection(COLLECTION_NAME)
-            .update(existingRecord.id, newData);
-          updatedCount++;
-        } else {
-          unchangedCount++;
+            .getFullList({
+              filter: `productName = "${productName}"`,
+            });
+
+          if (existingRecords.length > 0) {
+            const existingRecord = existingRecords[0];
+            // Check if the record needs updating
+            if (
+              JSON.stringify(newData) !==
+              JSON.stringify({
+                productName: existingRecord.productName,
+                unitOfMeasure: existingRecord.unitOfMeasure,
+                salesPrice: existingRecord.salesPrice,
+                indent: existingRecord.indent,
+              })
+            ) {
+              await pb
+                .collection(COLLECTION_NAME)
+                .update(existingRecord.id, newData);
+              updatedCount++;
+            } else {
+              unchangedCount++;
+            }
+          } else {
+            // Insert new record if it doesn't exist
+            await pb.collection(COLLECTION_NAME).create(newData);
+            insertedCount++;
+          }
+        } catch (error) {
+          console.error("Error processing row:", error);
+          fs.appendFileSync(
+            "error_log.txt",
+            `Row: ${JSON.stringify(row)}\nError: ${error}\n\n`,
+          );
         }
-      } else {
-        // Insert new record if it doesn't exist
-        await pb.collection(COLLECTION_NAME).create(newData);
-        insertedCount++;
-      }
-    } catch (error) {
-      console.error("Error processing row:", error);
-    }
-    progressBar.update(index + 1);
+      });
+      await Promise.all(promises);
+    });
+    progressBar.update(i + batch.length);
+    await setTimeout(1000); // Delay between batches
   }
 
   progressBar.stop();
@@ -154,7 +198,9 @@ async function updateData(rows) {
 
   for (let record of allRecords) {
     if (!sheetProductNames.has(record.productName)) {
-      await pb.collection(COLLECTION_NAME).delete(record.id);
+      await retryOperation(() =>
+        pb.collection(COLLECTION_NAME).delete(record.id),
+      );
       deletedCount++;
     }
   }
@@ -162,4 +208,13 @@ async function updateData(rows) {
   console.log(`Deleted ${deletedCount} records that were not in the sheet`);
 }
 
-updateSheetData();
+try {
+  updateSheetData();
+} catch (error) {
+  console.error("Unhandled error:", error);
+  fs.appendFileSync(
+    "updateSheetData.log",
+    `Unhandled Error: ${error}\n${error.stack}\n`,
+  );
+  process.exit(1);
+}
