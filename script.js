@@ -18,17 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentSearchTerm = "";
   let isPreparingPrint = false;
 
-  // Updated Google Spreadsheet ID and API key
-  const googleSpreadsheetId = "1TF2hAiXg5KfLARRnVSdT0YroW3su0f3K-iERs2RZjAw";
-  const apiKey = "AIzaSyBn1cNKwaNPl9WeK8_gQtU0p8ieBg0pUjQ";
-  const sheetName = "Sheet1";
-  const googleSheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${googleSpreadsheetId}/values/${sheetName}!A1:D?key=${apiKey}`;
-
   // Show loading spinner
   loadingSpinner.style.display = "block";
 
-  // Fetch data from Google Sheet
-  fetch(googleSheetUrl)
+  // Fetch data from products.json
+  fetch("products.json")
     .then((response) => {
       if (!response.ok) {
         throw new Error("Network response was not ok " + response.statusText);
@@ -37,16 +31,12 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then((data) => {
       loadingSpinner.style.display = "none";
-      if (data.values) {
-        allProducts = data.values.slice(1).map((row) => ({
-          productName: row[0] ? row[0].toString() : "",
-          unitOfMeasure: row[1] ? row[1].toString() : "",
-          salesPrice: row[2] ? row[2].toString() : "",
-          indent: row[3] === "TRUE",
-        }));
+      if (data && data.length) {
+        allProducts = data;
+        console.log("Loaded products:", allProducts);
         updateProductDisplay();
       } else {
-        throw new Error("No data found in the sheet.");
+        throw new Error("No data found in products.json");
       }
     })
     .catch((error) => {
@@ -99,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderProducts(products) {
+    console.log("Rendering products:", products);
     productTable.innerHTML = "";
     if (products.length === 0) {
       noResultsMessage.style.display = "block";
@@ -109,11 +100,13 @@ document.addEventListener("DOMContentLoaded", () => {
       products.forEach((product) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-                <td>${product.productName}</td>
-                <td>${product.unitOfMeasure}</td>
-                <td>${product.salesPrice}</td>
-                <td>${product.indent ? "✓" : ""}</td>
-            `;
+          <td>${product.productName}</td>
+          <td>${product.unitOfMeasure}</td>
+          <td>${product.salesPrice}</td>
+          <td style="text-align: left !important; padding-left: 20px !important;">${
+            product.indent ? "✓" : ""
+          }</td>
+        `;
         fragment.appendChild(row);
       });
       productTable.appendChild(fragment);
@@ -189,8 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Render all products without filters or sorting
       renderProducts(allProducts);
 
-      // Update the print date
-      updatePrintDate();
+      // Update all dates (including the print date)
+      updateAllDates();
 
       // Temporarily remove dark mode for printing
       const isDarkMode = document.body.classList.contains("dark-mode");
@@ -268,20 +261,24 @@ document.addEventListener("DOMContentLoaded", () => {
       el.classList.remove("fade-in");
     });
   }
+
+  // New function to update all date elements
+  function updateAllDates() {
+    const currentDate = getCurrentDate();
+    const dateElements = document.querySelectorAll(
+      "#generatedDate, #printGeneratedDate",
+    );
+    dateElements.forEach((element) => {
+      element.textContent = currentDate;
+    });
+  }
+
+  // Call this function when the page loads
+  updateAllDates();
 });
 
 function getCurrentDate() {
   const now = new Date();
   const options = { timeZone: "Asia/Singapore" };
   return now.toLocaleDateString("en-GB", options);
-}
-
-function updatePrintDate() {
-  const printDateElement = document.getElementById("printGeneratedDate");
-  const headerDateElement = document.getElementById("generatedDate");
-  if (printDateElement && headerDateElement) {
-    const currentDate = getCurrentDate();
-    printDateElement.textContent = currentDate;
-    headerDateElement.textContent = currentDate;
-  }
 }
