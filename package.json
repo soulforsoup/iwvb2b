@@ -1,13 +1,17 @@
 {
   "name": "iwvb2b",
   "version": "1.0.0",
-  "description": "IWantVeggies B2B Pricing",
-  "type": "module",
+  "description": "IWantVeggies B2B Wholesale Pricing",
   "main": "script.js",
   "scripts": {
-    "start": "http-server",
-    "update-data": "node updateSheetData.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "update-data": "node updateSheetData.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/soulforsoup/iwvb2b.git"
   },
   "keywords": [
     "vegetables",
@@ -16,12 +20,10 @@
     "pricing",
     "Singapore"
   ],
-  "author": "",
+  "author": "Your Name",
   "license": "ISC",
-  "dependencies": {
-    "node-fetch": "^3.2.0"
+  "bugs": {
+    "url": "https://github.com/soulforsoup/iwvb2b/issues"
   },
-  "devDependencies": {
-    "http-server": "^14.1.1"
-  }
+  "homepage": "https://github.com/soulforsoup/iwvb2b#readme"
 }
