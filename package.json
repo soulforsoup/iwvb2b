@@ -1,19 +1,27 @@
 {
-  "name": "sheet-data-updater",
+  "name": "iwvb2b",
   "version": "1.0.0",
-  "description": "Script to update PocketBase with Google Sheets data",
-  "main": "updateSheetData.js",
+  "description": "IWantVeggies B2B Pricing",
   "type": "module",
+  "main": "script.js",
   "scripts": {
-    "start": "node updateSheetData.js"
+    "start": "http-server",
+    "update-data": "node updateSheetData.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "vegetables",
+    "fruits",
+    "wholesale",
+    "pricing",
+    "Singapore"
+  ],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "cli-progress": "^3.12.0",
-    "dotenv": "^16.3.1",
-    "node-fetch": "^3.3.2",
-    "pocketbase": "^0.21.1"
+    "node-fetch": "^3.2.0"
   },
-  "engines": {
-    "node": ">=20.0.0"
+  "devDependencies": {
+    "http-server": "^14.1.1"
   }
 }
