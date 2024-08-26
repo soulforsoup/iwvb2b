@@ -6,7 +6,7 @@ IWantVeggies B2B Wholesale Pricing is a web-based application that provides up-t
 
 ## Features
 
-- **Real-time Pricing**: Prices are automatically updated from our Google Sheets database.
+- **Up-to-date Pricing**: Prices are automatically updated from our Google Sheets database. Currently, it is set to update hourly.
 - **Search Functionality**: Easily find specific products using the search bar.
 - **Sorting**: Sort products by name, unit of measure, price, or indent status.
 - **Responsive Design**: Optimized for both desktop and mobile viewing.
