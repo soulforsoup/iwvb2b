@@ -28,11 +28,11 @@ IWantVeggies B2B Wholesale Pricing is a web-based application that provides up-t
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/iwantveggies-b2b-pricing.git
+   git clone https://github.com/yourusername/iwvb2b.git
    ```
 2. Navigate to the project directory:
    ```
-   cd iwantveggies-b2b-pricing
+   cd iwvb2b
    ```
 3. Install dependencies:
    ```
@@ -50,7 +50,7 @@ IWantVeggies B2B Wholesale Pricing is a web-based application that provides up-t
 
 ## Usage
 
-Visit [https://yourusername.github.io/iwantveggies-b2b-pricing](https://yourusername.github.io/iwantveggies-b2b-pricing) to access the live pricing tool.
+Visit [https://yourusername.github.io/iwvb2b](https://yourusername.github.io/iwvb2b) to access the live pricing tool.
 
 - Enter the provided password when prompted to access the pricing information.
 - Use the search bar to find specific products.
