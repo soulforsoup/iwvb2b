@@ -266,7 +266,7 @@
   {
     "productName": "Bittergourd 苦瓜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$3.30",
+    "salesPrice": "$3.00",
     "indent": false
   },
   {
@@ -308,7 +308,7 @@
   {
     "productName": "Cabbage Long Chinese 大白菜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$1.60",
+    "salesPrice": "$1.70",
     "indent": false
   },
   {
@@ -368,7 +368,7 @@
   {
     "productName": "Cauliflower 菜花",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$4.10",
+    "salesPrice": "$4.35",
     "indent": false
   },
   {
@@ -536,13 +536,13 @@
   {
     "productName": "Cucumber Japanese 日本青瓜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$3.00",
+    "salesPrice": "$3.20",
     "indent": false
   },
   {
     "productName": "Cucumber Japanese 日本青瓜 10KG",
     "unitOfMeasure": "/CTN",
-    "salesPrice": "$29.50",
+    "salesPrice": "$31.50",
     "indent": false
   },
   {
@@ -716,7 +716,7 @@
   {
     "productName": "Ginger Young 仔姜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$5.30",
+    "salesPrice": "$4.90",
     "indent": true
   },
   {
@@ -1016,7 +1016,7 @@
   {
     "productName": "Luffa 角瓜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$3.45",
+    "salesPrice": "$2.40",
     "indent": false
   },
   {
@@ -1092,6 +1092,12 @@
     "indent": false
   },
   {
+    "productName": "Mini Pumpkin 贝贝南瓜",
+    "unitOfMeasure": "/PCS",
+    "salesPrice": "$3.20",
+    "indent": false
+  },
+  {
     "productName": "Mushroom Abalone 鲍鱼菇 150G",
     "unitOfMeasure": "/PKT",
     "salesPrice": "$1.65",
@@ -1142,7 +1148,7 @@
   {
     "productName": "Mushroom Shiitake 新香菇",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$9.10",
+    "salesPrice": "$9.35",
     "indent": false
   },
   {
@@ -1172,7 +1178,7 @@
   {
     "productName": "Onion Spring 青葱",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$5.00",
+    "salesPrice": "$6.00",
     "indent": false
   },
   {
@@ -1874,7 +1880,7 @@
   {
     "productName": "Xiao Bai Chye 小白菜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$3.45",
+    "salesPrice": "$3.70",
     "indent": false
   },
   {
@@ -1886,7 +1892,7 @@
   {
     "productName": "Yam Thai 泰国芋头",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$5.90",
+    "salesPrice": "$5.10",
     "indent": false
   },
   {
