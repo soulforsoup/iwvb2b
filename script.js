@@ -103,7 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>${product.productName}</td>
           <td>${product.unitOfMeasure}</td>
           <td>${product.salesPrice}</td>
-          <td style="text-align: left !important; padding-left: 20px !important;">${product.indent ? "✓" : ""}</td>
+          <td style="text-align: left !important; padding-left: 20px !important;">${
+            product.indent ? "✓" : ""
+          }</td>
         `;
         fragment.appendChild(row);
       });
@@ -180,8 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Render all products without filters or sorting
       renderProducts(allProducts);
 
-      // Update the print date
-      updatePrintDate();
+      // Update all dates (including the print date)
+      updateAllDates();
 
       // Temporarily remove dark mode for printing
       const isDarkMode = document.body.classList.contains("dark-mode");
@@ -259,20 +261,24 @@ document.addEventListener("DOMContentLoaded", () => {
       el.classList.remove("fade-in");
     });
   }
+
+  // New function to update all date elements
+  function updateAllDates() {
+    const currentDate = getCurrentDate();
+    const dateElements = document.querySelectorAll(
+      "#generatedDate, #printGeneratedDate",
+    );
+    dateElements.forEach((element) => {
+      element.textContent = currentDate;
+    });
+  }
+
+  // Call this function when the page loads
+  updateAllDates();
 });
 
 function getCurrentDate() {
   const now = new Date();
   const options = { timeZone: "Asia/Singapore" };
   return now.toLocaleDateString("en-GB", options);
-}
-
-function updatePrintDate() {
-  const printDateElement = document.getElementById("printGeneratedDate");
-  const headerDateElement = document.getElementById("generatedDate");
-  if (printDateElement && headerDateElement) {
-    const currentDate = getCurrentDate();
-    printDateElement.textContent = currentDate;
-    headerDateElement.textContent = currentDate;
-  }
 }

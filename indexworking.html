@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>IWantVeggies Wholesale Pricing</title>
+        <meta
+            name="description"
+            content="IWantVeggies Wholesale Pricing - Find the best wholesale prices for fresh vegetables and fruits in Singapore."
+        />
+        <meta
+            name="keywords"
+            content="vegetables, fruits, wholesale, pricing, Singapore"
+        />
+        <link rel="stylesheet" href="styles.css" />
+        <link rel="icon" href="images/favicon.png" type="image/png" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        />
+    </head>
+    <body>
+        <div class="print-header">
+            <img
+                src="images/iwantveggies.png"
+                alt="IWantVeggies Logo"
+                class="logo"
+            />
+            <h1>IWantVeggies Wholesale Pricing</h1>
+        </div>
+        <header>
+            <div class="header-left">
+                <img
+                    src="images/iwantveggies.png"
+                    alt="IWantVeggies Logo"
+                    class="logo"
+                />
+                <h1>IWantVeggies Wholesale Pricing</h1>
+            </div>
+            <div class="header-right">
+                <div class="header-search">
+                    <input
+                        type="text"
+                        id="headerSearchBar"
+                        placeholder="Search products..."
+                        aria-label="Search products"
+                    />
+                    <button id="headerClearSearch" aria-label="Clear search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="header-buttons">
+                    <button id="contactBtn" aria-label="Contact Us">
+                        <i class="fas fa-phone"></i>
+                        <span>Contact Us</span>
+                    </button>
+                    <button id="downloadBtn" aria-label="Download Price List">
+                        <i class="fas fa-download"></i>
+                        <span>Download</span>
+                    </button>
+                    <button id="themeToggle" aria-label="Toggle Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="table-container">
+                <table id="productTable">
+                    <thead>
+                        <tr>
+                            <th data-column="productName">
+                                Product <i class="fas fa-sort"></i>
+                            </th>
+                            <th data-column="unitOfMeasure">
+                                UOM <i class="fas fa-sort"></i>
+                            </th>
+                            <th data-column="salesPrice">
+                                Price <i class="fas fa-sort"></i>
+                            </th>
+                            <th data-column="indent">
+                                Indent <i class="fas fa-sort"></i>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Product data will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+                <div id="loadingSpinner" class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i> Loading...
+                </div>
+                <div id="noResults" class="no-results" style="display: none">
+                    No results found
+                </div>
+            </div>
+            <div
+                id="errorMessage"
+                class="error-message"
+                style="display: none"
+            ></div>
+        </main>
+        <footer>
+            <div class="note">
+                <p><strong>Note:</strong></p>
+                <ul>
+                    <li>Minimum order value of $80.</li>
+                    <li>
+                        The prices listed in this document are accurate as of
+                        the generated date.
+                    </li>
+                    <li>
+                        Items checked in the "Indent" column require additional
+                        lead time from the order date.
+                    </li>
+                    <li>
+                        Prices are subject to change without notice due to
+                        market conditions.
+                    </li>
+                    <li>
+                        We are not GST registered, hence all prices quoted above
+                        are nett.
+                    </li>
+                    <li>
+                        Need an item that is not on this list? Do enquire with
+                        us.
+                    </li>
+                </ul>
+                <p>Pricelist generated on: <span id="generatedDate"></span></p>
+            </div>
+        </footer>
+        <div class="bottom-search">
+            <input
+                type="text"
+                id="bottomSearchBar"
+                placeholder="Search products..."
+                aria-label="Search products"
+            />
+            <button id="bottomClearSearch" aria-label="Clear search">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <button id="backToTop" aria-label="Back to top">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+        <script src="script.js"></script>
+        <div class="print-footer">
+            <div class="note">
+                <p><strong>Note:</strong></p>
+                <ul>
+                    <li>Minimum order value of $80.</li>
+                    <li>
+                        The prices listed in this document are accurate as of
+                        the generated date.
+                    </li>
+                    <li>
+                        Items checked in the "Indent" column require additional
+                        lead time from the order date.
+                    </li>
+                    <li>
+                        Prices are subject to change without notice due to
+                        market conditions.
+                    </li>
+                    <li>
+                        We are not GST registered, hence all prices quoted above
+                        are nett.
+                    </li>
+                    <li>
+                        Need an item that is not on this list? Do enquire with
+                        us.
+                    </li>
+                </ul>
+                <p>
+                    Pricelist generated on:
+                    <span id="printGeneratedDate"></span>
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
