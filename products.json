@@ -1314,9 +1314,15 @@
     "indent": false
   },
   {
-    "productName": "Peach White 白桃 6PCS",
-    "unitOfMeasure": "/BOX",
-    "salesPrice": "$1.80",
+    "productName": "Peach White 白桃 20PCS",
+    "unitOfMeasure": "/CTN",
+    "salesPrice": "$49.90",
+    "indent": true
+  },
+  {
+    "productName": "Peach White 白桃",
+    "unitOfMeasure": "/PCS",
+    "salesPrice": "$2.80",
     "indent": true
   },
   {
