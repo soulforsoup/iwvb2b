@@ -28,7 +28,7 @@ IWantVeggies B2B Wholesale Pricing is a web-based application that provides up-t
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/iwvb2b.git
+   git clone https://github.com/soulforsoup/iwvb2b.git
    ```
 2. Navigate to the project directory:
    ```
