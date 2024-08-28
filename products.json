@@ -968,13 +968,13 @@
   {
     "productName": "Lettuce Coral Green 青生菜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$6.50",
+    "salesPrice": "$6.00",
     "indent": false
   },
   {
     "productName": "Lettuce Coral Red 红生菜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$6.50",
+    "salesPrice": "$6.00",
     "indent": false
   },
   {
@@ -1314,15 +1314,15 @@
     "indent": false
   },
   {
-    "productName": "Peach White 白桃 20PCS",
-    "unitOfMeasure": "/CTN",
-    "salesPrice": "$49.90",
-    "indent": true
-  },
-  {
     "productName": "Peach White 白桃",
     "unitOfMeasure": "/PCS",
     "salesPrice": "$2.80",
+    "indent": true
+  },
+  {
+    "productName": "Peach White 白桃 20PCS",
+    "unitOfMeasure": "/CTN",
+    "salesPrice": "$49.90",
     "indent": true
   },
   {
