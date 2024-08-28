@@ -44,7 +44,7 @@
   {
     "productName": "Apple Custard 番荔枝        ",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$17.00",
+    "salesPrice": "#N/A",
     "indent": false
   },
   {
@@ -80,13 +80,13 @@
   {
     "productName": "Arugula Australian 澳洲火箭菜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$27.00",
+    "salesPrice": "$26.00",
     "indent": true
   },
   {
     "productName": "Arugula Cameron Highlands 火箭菜 500G",
     "unitOfMeasure": "/PKT",
-    "salesPrice": "$14.90",
+    "salesPrice": "$13.50",
     "indent": true
   },
   {
@@ -607,13 +607,13 @@
   },
   {
     "productName": "Egg 鸡蛋 Grade AA 30PCS",
-    "unitOfMeasure": "/Tray",
+    "unitOfMeasure": "/TRAY",
     "salesPrice": "$10.80",
     "indent": false
   },
   {
     "productName": "Egg 鸡蛋 Grade C 30PCS",
-    "unitOfMeasure": "/Tray",
+    "unitOfMeasure": "/TRAY",
     "salesPrice": "$8.60",
     "indent": false
   },
@@ -1682,7 +1682,7 @@
   {
     "productName": "Spinach Leaf Baby 婴儿菠菜叶",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$27.00",
+    "salesPrice": "$24.00",
     "indent": true
   },
   {
@@ -1838,7 +1838,7 @@
   {
     "productName": "Tomatoes Cherry Red 红樱桃番茄",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$5.80",
+    "salesPrice": "$5.50",
     "indent": false
   },
   {
