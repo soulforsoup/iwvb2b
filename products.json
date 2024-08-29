@@ -180,9 +180,9 @@
     "indent": false
   },
   {
-    "productName": "Banana Cavendish Sunpride 香蕉 14KG",
+    "productName": "Banana Cavendish Sunpride 香蕉 15KG",
     "unitOfMeasure": "/CTN",
-    "salesPrice": "$33.00",
+    "salesPrice": "$35.00",
     "indent": false
   },
   {
@@ -386,7 +386,7 @@
   {
     "productName": "Celery Chinese 芹菜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$5.00",
+    "salesPrice": "$3.40",
     "indent": false
   },
   {
@@ -476,7 +476,7 @@
   {
     "productName": "Chye Sim Hong Kong 香港菜心",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$5.80",
+    "salesPrice": "$4.90",
     "indent": false
   },
   {
@@ -506,7 +506,7 @@
   {
     "productName": "Coriander Thai 泰国芫茜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$11.40",
+    "salesPrice": "$10.50",
     "indent": false
   },
   {
@@ -554,7 +554,7 @@
   {
     "productName": "Cucumber Old 老黄瓜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$3.35",
+    "salesPrice": "$2.80",
     "indent": false
   },
   {
@@ -632,7 +632,7 @@
   {
     "productName": "Eggplant 红茄",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$4.30",
+    "salesPrice": "$3.90",
     "indent": false
   },
   {
@@ -830,7 +830,7 @@
   {
     "productName": "Kailan Hong Kong 香港芥兰",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$5.90",
+    "salesPrice": "$4.90",
     "indent": false
   },
   {
@@ -938,7 +938,7 @@
   {
     "productName": "Leek 青蒜",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$4.00",
+    "salesPrice": "$4.60",
     "indent": false
   },
   {
@@ -1484,13 +1484,13 @@
   {
     "productName": "Potatoes Local 本地马铃薯",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$1.60",
+    "salesPrice": "$1.20",
     "indent": false
   },
   {
     "productName": "Potatoes Local 本地马铃薯 10KG",
     "unitOfMeasure": "/SACK",
-    "salesPrice": "$15.00",
+    "salesPrice": "$11.50",
     "indent": false
   },
   {
@@ -1508,7 +1508,7 @@
   {
     "productName": "Potatoes Sweet Japanese S Size 日本番薯 5KG",
     "unitOfMeasure": "/CTN",
-    "salesPrice": "$7.00",
+    "salesPrice": "$5.00",
     "indent": false
   },
   {
@@ -1622,7 +1622,7 @@
   {
     "productName": "Scallion - Bei Chong 北葱",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$3.70",
+    "salesPrice": "$4.50",
     "indent": false
   },
   {
@@ -1682,7 +1682,7 @@
   {
     "productName": "Spinach Leaf Baby 婴儿菠菜叶",
     "unitOfMeasure": "/KG",
-    "salesPrice": "$24.00",
+    "salesPrice": "$27.00",
     "indent": true
   },
   {
