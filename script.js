@@ -110,9 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>
             <input type="number" class="quantity-input" value="${quantity}" min="1" step="1" ${isKg ? 'data-kg="true"' : ""} style="width: 60px;">
           </td>
-          <td style="text-align: left !important; padding-left: 20px !important;">${
-            product.indent ? "✓" : ""
-          }</td>
+          <td style="text-align: left !important; padding-left: 20px !important;">${product.indent ? "✓" : ""}</td>
         `;
         fragment.appendChild(row);
       });
@@ -129,6 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".quantity-input").forEach((input) => {
       input.addEventListener("input", handleQuantityInput);
+      input.addEventListener("blur", cleanupQuantityInput);
       input.addEventListener("change", updateSelectedProducts);
     });
   }
@@ -136,25 +135,41 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleQuantityInput(event) {
     const input = event.target;
     if (input.dataset.kg === "true") {
-      // Allow decimal input for /KG items
-      let value = input.value.replace(/[^0-9.]/g, "");
-      const decimalParts = value.split(".");
-
-      if (decimalParts.length > 2) {
-        // More than one decimal point, keep only the first two parts
-        value = decimalParts.slice(0, 2).join(".");
-      }
-
-      if (decimalParts.length === 2 && decimalParts[1].length > 1) {
-        // Limit to one decimal place
-        decimalParts[1] = decimalParts[1].slice(0, 1);
-        value = decimalParts.join(".");
-      }
-
+      // Allow any input for /KG items, including decimals
+      let value = input.value;
+      // Remove any non-digit or non-decimal characters, but allow multiple decimal points for now
+      value = value.replace(/[^0-9.]/g, "");
       input.value = value;
     } else {
       // Only allow whole numbers for non-/KG items
       input.value = input.value.replace(/[^0-9]/g, "");
+    }
+  }
+
+  function cleanupQuantityInput(event) {
+    const input = event.target;
+    if (input.dataset.kg === "true") {
+      let value = input.value;
+      // Remove leading zeros
+      value = value.replace(/^0+/, "");
+      // Ensure there's only one decimal point
+      const parts = value.split(".");
+      if (parts.length > 2) {
+        value = parts[0] + "." + parts.slice(1).join("");
+      }
+      // Limit to one decimal place
+      if (parts.length === 2 && parts[1].length > 1) {
+        value = parts[0] + "." + parts[1].slice(0, 1);
+      }
+      // If the value is just a decimal point, prepend a zero
+      if (value === ".") {
+        value = "0.";
+      }
+      // If the value ends with a decimal point, remove it
+      if (value.endsWith(".")) {
+        value = value.slice(0, -1);
+      }
+      input.value = value || "0"; // Default to '0' if empty
     }
     updateSelectedProducts({ target: input });
   }
