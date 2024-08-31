@@ -69,6 +69,7 @@
                 <table id="productTable">
                     <thead>
                         <tr>
+                            <th class="checkbox-column"></th>
                             <th data-column="productName">
                                 Product <i class="fas fa-sort"></i>
                             </th>
@@ -78,6 +79,7 @@
                             <th data-column="salesPrice">
                                 Price <i class="fas fa-sort"></i>
                             </th>
+                            <th>Quantity</th>
                             <th data-column="indent">
                                 Indent <i class="fas fa-sort"></i>
                             </th>
@@ -142,6 +144,9 @@
         </div>
         <button id="backToTop" aria-label="Back to top">
             <i class="fas fa-arrow-up"></i>
+        </button>
+        <button id="copyToClipboard" class="copy-button">
+            Copy Selected Items to Clipboard
         </button>
         <script src="script.js"></script>
         <div class="print-footer">

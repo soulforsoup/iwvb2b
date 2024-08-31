@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorMessage = document.getElementById("errorMessage");
   const backToTopButton = document.getElementById("backToTop");
   const noResultsMessage = document.getElementById("noResults");
+  const copyToClipboardBtn = document.getElementById("copyToClipboard");
 
   let allProducts = [];
   let currentSortColumn = null;
@@ -18,10 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentSearchTerm = "";
   let isPreparingPrint = false;
 
-  // Show loading spinner
   loadingSpinner.style.display = "block";
 
-  // Fetch data from products.json
   fetch("products.json")
     .then((response) => {
       if (!response.ok) {
@@ -50,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
     removeAnimationClasses();
     let displayedProducts = allProducts;
 
-    // Apply search filter
     if (currentSearchTerm) {
       displayedProducts = displayedProducts.filter((product) =>
         product.productName
@@ -59,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    // Apply sort
     if (currentSortColumn) {
       displayedProducts.sort((a, b) => {
         if (currentSortColumn === "indent") {
@@ -100,9 +97,15 @@ document.addEventListener("DOMContentLoaded", () => {
       products.forEach((product) => {
         const row = document.createElement("tr");
         row.innerHTML = `
+          <td class="checkbox-column">
+            <input type="checkbox" class="product-checkbox" data-product='${JSON.stringify(product)}'>
+          </td>
           <td>${product.productName}</td>
           <td>${product.unitOfMeasure}</td>
           <td>${product.salesPrice}</td>
+          <td>
+            <input type="number" class="quantity-input" value="1" min="1" style="width: 50px;">
+          </td>
           <td style="text-align: left !important; padding-left: 20px !important;">${
             product.indent ? "✓" : ""
           }</td>
@@ -175,34 +178,19 @@ document.addEventListener("DOMContentLoaded", () => {
   downloadBtn.addEventListener("click", () => {
     if (!isPreparingPrint) {
       isPreparingPrint = true;
-
-      // Store current state
       const originalTableHTML = productTable.innerHTML;
-
-      // Render all products without filters or sorting
       renderProducts(allProducts);
-
-      // Update all dates (including the print date)
       updateAllDates();
-
-      // Temporarily remove dark mode for printing
       const isDarkMode = document.body.classList.contains("dark-mode");
       if (isDarkMode) {
         document.body.classList.remove("dark-mode");
       }
-
-      // Use setTimeout to allow the DOM to update before printing
       setTimeout(() => {
         window.print();
-
-        // After printing, restore the original state
         productTable.innerHTML = originalTableHTML;
-
-        // Restore dark mode if it was active
         if (isDarkMode) {
           document.body.classList.add("dark-mode");
         }
-
         isPreparingPrint = false;
       }, 100);
     }
@@ -262,7 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // New function to update all date elements
   function updateAllDates() {
     const currentDate = getCurrentDate();
     const dateElements = document.querySelectorAll(
@@ -273,8 +260,58 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Call this function when the page loads
   updateAllDates();
+
+  copyToClipboardBtn.addEventListener("click", () => {
+    const selectedProducts = Array.from(
+      document.querySelectorAll(".product-checkbox:checked"),
+    ).map((checkbox) => {
+      const product = JSON.parse(checkbox.dataset.product);
+      const quantityInput = checkbox
+        .closest("tr")
+        .querySelector(".quantity-input");
+      const quantity = parseInt(quantityInput.value, 10) || 1;
+      return { ...product, quantity };
+    });
+
+    if (selectedProducts.length === 0) {
+      alert("Please select at least one product.");
+      return;
+    }
+
+    let clipboardText = "";
+    let totalPrice = 0;
+
+    selectedProducts.forEach((product) => {
+      const price = parseFloat(product.salesPrice.replace(/[^0-9.-]+/g, ""));
+      const productTotal = price * product.quantity;
+      totalPrice += productTotal;
+
+      clipboardText += `${product.productName}/${product.unitOfMeasure}: $${price.toFixed(2)}, Quantity: ${product.quantity}, Total: $${productTotal.toFixed(2)}\n`;
+    });
+
+    const shippingPrice = totalPrice < 80 ? 8 : 0;
+    const finalTotal = totalPrice + shippingPrice;
+
+    if (shippingPrice === 0) {
+      clipboardText += `\nShipping Price: Free Shipping (Order Value above $80)`;
+    } else {
+      clipboardText += `\nShipping Price: $8 (Shipping fee applies for order values below $80)`;
+    }
+    clipboardText += `\nTotal Estimated Price: $${finalTotal.toFixed(2)}`;
+
+    navigator.clipboard
+      .writeText(clipboardText)
+      .then(() => {
+        alert(
+          "Selected items copied to clipboard! Please send the copied text to our WhatsApp for ordering.",
+        );
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+        alert("Failed to copy text. Please try again.");
+      });
+  });
 });
 
 function getCurrentDate() {
