@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isAscending = true;
   let currentSearchTerm = "";
   let isPreparingPrint = false;
+  let selectedProducts = new Map(); // Store selected products and their quantities
 
   loadingSpinner.style.display = "block";
 
@@ -96,15 +97,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const fragment = document.createDocumentFragment();
       products.forEach((product) => {
         const row = document.createElement("tr");
+        const isSelected = selectedProducts.has(product.productName);
+        const quantity = isSelected
+          ? selectedProducts.get(product.productName).quantity
+          : 1;
         row.innerHTML = `
-          <td class="checkbox-column">
-            <input type="checkbox" class="product-checkbox" data-product='${JSON.stringify(product)}'>
+          <td class="checkbox-column no-print">
+            <input type="checkbox" class="product-checkbox" data-product='${JSON.stringify(product)}' ${isSelected ? "checked" : ""}>
           </td>
           <td>${product.productName}</td>
           <td>${product.unitOfMeasure}</td>
           <td>${product.salesPrice}</td>
           <td>
-            <input type="number" class="quantity-input" value="1" min="1" style="width: 50px;">
+            <input type="number" class="quantity-input" value="${quantity}" min="1" style="width: 50px;">
           </td>
           <td style="text-align: left !important; padding-left: 20px !important;">${
             product.indent ? "✓" : ""
@@ -114,6 +119,33 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       productTable.appendChild(fragment);
       productTable.classList.add("fade-in");
+      attachEventListeners();
+    }
+  }
+
+  function attachEventListeners() {
+    document.querySelectorAll(".product-checkbox").forEach((checkbox) => {
+      checkbox.addEventListener("change", updateSelectedProducts);
+    });
+
+    document.querySelectorAll(".quantity-input").forEach((input) => {
+      input.addEventListener("change", updateSelectedProducts);
+    });
+  }
+
+  function updateSelectedProducts(event) {
+    const row = event.target.closest("tr");
+    const checkbox = row.querySelector(".product-checkbox");
+    const quantityInput = row.querySelector(".quantity-input");
+    const product = JSON.parse(checkbox.dataset.product);
+
+    if (checkbox.checked) {
+      selectedProducts.set(product.productName, {
+        quantity: parseInt(quantityInput.value, 10) || 1,
+        product: product,
+      });
+    } else {
+      selectedProducts.delete(product.productName);
     }
   }
 
@@ -263,55 +295,69 @@ document.addEventListener("DOMContentLoaded", () => {
   updateAllDates();
 
   copyToClipboardBtn.addEventListener("click", () => {
-    const selectedProducts = Array.from(
-      document.querySelectorAll(".product-checkbox:checked"),
-    ).map((checkbox) => {
-      const product = JSON.parse(checkbox.dataset.product);
-      const quantityInput = checkbox
-        .closest("tr")
-        .querySelector(".quantity-input");
-      const quantity = parseInt(quantityInput.value, 10) || 1;
-      return { ...product, quantity };
-    });
-
-    if (selectedProducts.length === 0) {
+    if (selectedProducts.size === 0) {
       alert("Please select at least one product.");
       return;
     }
 
-    let clipboardText = "";
+    let clipboardText = "🛒 Your Order Summary:\n\n";
     let totalPrice = 0;
 
-    selectedProducts.forEach((product) => {
+    selectedProducts.forEach(({ quantity, product }, productName) => {
       const price = parseFloat(product.salesPrice.replace(/[^0-9.-]+/g, ""));
-      const productTotal = price * product.quantity;
+      const productTotal = price * quantity;
       totalPrice += productTotal;
 
-      clipboardText += `${product.productName}/${product.unitOfMeasure}: $${price.toFixed(2)}, Quantity: ${product.quantity}, Total: $${productTotal.toFixed(2)}\n`;
+      clipboardText += `${product.productName}/${product.unitOfMeasure}: $${price.toFixed(2)}, Quantity: ${quantity}, Total: $${productTotal.toFixed(2)}\n`;
+      clipboardText += "----------------------------------------\n";
     });
 
     const shippingPrice = totalPrice < 80 ? 8 : 0;
     const finalTotal = totalPrice + shippingPrice;
 
+    clipboardText += "\n📦 Shipping Information:\n";
     if (shippingPrice === 0) {
-      clipboardText += `\nShipping Price: Free Shipping (Order Value above $80)`;
+      clipboardText += "   • Free Shipping (Order Value above $80)\n";
     } else {
-      clipboardText += `\nShipping Price: $8 (Shipping fee applies for order values below $80)`;
+      clipboardText +=
+        "   • $8 (Shipping fee applies for order values below $80)\n";
     }
-    clipboardText += `\nTotal Estimated Price: $${finalTotal.toFixed(2)}`;
+
+    clipboardText += "\n💰 Order Summary:\n";
+    clipboardText += `   • Subtotal: $${totalPrice.toFixed(2)}\n`;
+    clipboardText += `   • Shipping: $${shippingPrice.toFixed(2)}\n`;
+    clipboardText += `   • Total: $${finalTotal.toFixed(2)}\n\n`;
+
+    clipboardText +=
+      "Thank you for your order! Please send this text to our WhatsApp for processing.";
 
     navigator.clipboard
       .writeText(clipboardText)
       .then(() => {
-        alert(
-          "Selected items copied to clipboard! Please send the copied text to our WhatsApp for ordering.",
-        );
+        showCustomAlert();
       })
       .catch((err) => {
         console.error("Failed to copy text: ", err);
         alert("Failed to copy text. Please try again.");
       });
   });
+
+  function showCustomAlert() {
+    const modal = document.getElementById("customAlert");
+    const closeBtn = document.getElementById("closeModal");
+
+    modal.style.display = "block";
+
+    closeBtn.onclick = function () {
+      modal.style.display = "none";
+    };
+
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    };
+  }
 });
 
 function getCurrentDate() {
