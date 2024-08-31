@@ -69,12 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
               ? 1
               : -1;
         } else if (currentSortColumn === "salesPrice") {
-          const priceA = parseFloat(
-            a[currentSortColumn].replace(/[^0-9.-]+/g, ""),
-          );
-          const priceB = parseFloat(
-            b[currentSortColumn].replace(/[^0-9.-]+/g, ""),
-          );
+          const priceA =
+            parseFloat(a[currentSortColumn].replace(/[^0-9.-]+/g, "")) || 0;
+          const priceB =
+            parseFloat(b[currentSortColumn].replace(/[^0-9.-]+/g, "")) || 0;
           return isAscending ? priceA - priceB : priceB - priceA;
         }
         return isAscending
@@ -101,15 +99,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const quantity = isSelected
           ? selectedProducts.get(product.productName).quantity
           : 1;
+        const isKg = product.unitOfMeasure === "/KG";
         row.innerHTML = `
           <td class="checkbox-column no-print">
             <input type="checkbox" class="product-checkbox" data-product='${JSON.stringify(product)}' ${isSelected ? "checked" : ""}>
           </td>
           <td>${product.productName}</td>
           <td>${product.unitOfMeasure}</td>
-          <td>${product.salesPrice}</td>
+          <td>${product.salesPrice || "(Check with Customer Service for Pricing)"}</td>
           <td>
-            <input type="number" class="quantity-input" value="${quantity}" min="1" style="width: 50px;">
+            <input type="number" class="quantity-input" value="${quantity}" min="1" step="1" ${isKg ? 'data-kg="true"' : ""} style="width: 60px;">
           </td>
           <td style="text-align: left !important; padding-left: 20px !important;">${
             product.indent ? "✓" : ""
@@ -129,8 +128,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.querySelectorAll(".quantity-input").forEach((input) => {
+      input.addEventListener("input", handleQuantityInput);
       input.addEventListener("change", updateSelectedProducts);
     });
+  }
+
+  function handleQuantityInput(event) {
+    const input = event.target;
+    if (input.dataset.kg === "true") {
+      // Allow decimal input for /KG items
+      let value = input.value.replace(/[^0-9.]/g, "");
+      const decimalParts = value.split(".");
+
+      if (decimalParts.length > 2) {
+        // More than one decimal point, keep only the first two parts
+        value = decimalParts.slice(0, 2).join(".");
+      }
+
+      if (decimalParts.length === 2 && decimalParts[1].length > 1) {
+        // Limit to one decimal place
+        decimalParts[1] = decimalParts[1].slice(0, 1);
+        value = decimalParts.join(".");
+      }
+
+      input.value = value;
+    } else {
+      // Only allow whole numbers for non-/KG items
+      input.value = input.value.replace(/[^0-9]/g, "");
+    }
+    updateSelectedProducts({ target: input });
   }
 
   function updateSelectedProducts(event) {
@@ -139,13 +165,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const quantityInput = row.querySelector(".quantity-input");
     const product = JSON.parse(checkbox.dataset.product);
 
-    if (checkbox.checked) {
+    let quantity;
+    if (product.unitOfMeasure === "/KG") {
+      quantity = parseFloat(quantityInput.value) || 0;
+    } else {
+      quantity = parseInt(quantityInput.value, 10) || 0;
+    }
+
+    if (quantity > 0) {
+      checkbox.checked = true;
       selectedProducts.set(product.productName, {
-        quantity: parseInt(quantityInput.value, 10) || 1,
+        quantity: quantity,
         product: product,
       });
     } else {
+      checkbox.checked = false;
       selectedProducts.delete(product.productName);
+    }
+
+    // If the event was triggered by changing the quantity, update the checkbox
+    if (event.target.classList.contains("quantity-input")) {
+      checkbox.checked = quantity > 0;
     }
   }
 
@@ -304,12 +344,23 @@ document.addEventListener("DOMContentLoaded", () => {
     let totalPrice = 0;
 
     selectedProducts.forEach(({ quantity, product }, productName) => {
-      const price = parseFloat(product.salesPrice.replace(/[^0-9.-]+/g, ""));
-      const productTotal = price * quantity;
-      totalPrice += productTotal;
+      const price = parseFloat(product.salesPrice?.replace(/[^0-9.-]+/g, ""));
+      const productQuantity =
+        product.unitOfMeasure === "/KG"
+          ? parseFloat(quantity)
+          : parseInt(quantity, 10);
 
-      clipboardText += `${product.productName}/${product.unitOfMeasure}: $${price.toFixed(2)}, Quantity: ${quantity}, Total: $${productTotal.toFixed(2)}\n`;
-      clipboardText += "----------------------------------------\n";
+      clipboardText += `${product.productName}/${product.unitOfMeasure}: `;
+
+      if (isNaN(price)) {
+        clipboardText += "(Check with Customer Service for Pricing)";
+      } else {
+        const productTotal = price * productQuantity;
+        totalPrice += productTotal;
+        clipboardText += `$${price.toFixed(2)}, Quantity: ${formatQuantity(productQuantity, product.unitOfMeasure)}, Total: $${productTotal.toFixed(2)}`;
+      }
+
+      clipboardText += "\n----------------------------------------\n";
     });
 
     const shippingPrice = totalPrice < 80 ? 8 : 0;
@@ -328,7 +379,6 @@ document.addEventListener("DOMContentLoaded", () => {
     clipboardText += `   • Shipping: $${shippingPrice.toFixed(2)}\n`;
     clipboardText += `   • Total: $${finalTotal.toFixed(2)}\n\n`;
 
-    // Add the disclaimer before the thank you message
     clipboardText +=
       "⚠️ Disclaimer: The prices listed are estimates for reference only and are subject to changes.\n\n";
 
@@ -361,6 +411,23 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.style.display = "none";
       }
     };
+  }
+
+  window.addEventListener("beforeunload", function (e) {
+    if (selectedProducts.size > 0) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
+  function formatQuantity(quantity, unitOfMeasure) {
+    if (unitOfMeasure === "/KG") {
+      // For /KG items, show one decimal place if it's not a whole number
+      return quantity % 1 === 0 ? quantity.toFixed(0) : quantity.toFixed(1);
+    } else {
+      // For non-/KG items, always show as whole numbers
+      return quantity.toFixed(0);
+    }
   }
 });
 
