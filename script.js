@@ -328,6 +328,10 @@ document.addEventListener("DOMContentLoaded", () => {
     clipboardText += `   • Shipping: $${shippingPrice.toFixed(2)}\n`;
     clipboardText += `   • Total: $${finalTotal.toFixed(2)}\n\n`;
 
+    // Add the disclaimer before the thank you message
+    clipboardText +=
+      "⚠️ Disclaimer: The prices listed are estimates for reference only and are subject to changes.\n\n";
+
     clipboardText +=
       "Thank you for your order! Please send this text to our WhatsApp for processing.";
 
