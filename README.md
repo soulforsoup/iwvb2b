@@ -6,13 +6,14 @@ IWantVeggies B2B Wholesale Pricing is a web-based application that provides up-t
 
 ## Features
 
-- **Up-to-date Pricing**: Prices are automatically updated from the Google Sheets database using cron.
+- **Up-to-date Pricing**: Prices are automatically updated from the Google Sheets database using GitHub Actions.
 - **Search Functionality**: Easily find specific products using the search bar.
 - **Sorting**: Sort products by name, unit of measure, price, or indent status.
 - **Responsive Design**: Optimized for both desktop and mobile viewing.
 - **Dark Mode**: Toggle between light and dark themes for comfortable viewing in any environment.
 - **Printable Version**: Generate a printer-friendly version of the price list.
 - **Password Protection**: Secure access to pricing information for authorized users only.
+- **Order Summary**: Select products and quantities to generate a clipboard-friendly order summary.
 
 ## Technology Stack
 
@@ -44,7 +45,7 @@ IWantVeggies B2B Wholesale Pricing is a web-based application that provides up-t
    ```
 5. To encrypt the HTML file with StatiCrypt (if you're a maintainer):
    ```
-   npx staticrypt index.html -p your_password_here
+   npx staticrypt indexworking.html -p your_password_here
    ```
    This will generate an encrypted `index.html` file.
 
@@ -57,6 +58,7 @@ Visit [https://yourusername.github.io/iwvb2b](https://yourusername.github.io/iwv
 - Click on column headers to sort the data.
 - Toggle dark mode using the moon/sun icon in the header.
 - Click the download button to generate a printable version.
+- Select products and quantities, then use the "Copy Order" button to generate an order summary.
 
 ## Password Protection
 
@@ -67,21 +69,31 @@ To access the pricing information:
 2. Enter the provided password when prompted
 3. Once authenticated, you'll have full access to the pricing tool
 
-If you're an authorized user and don't have the password, please contact us at [zecryne@gmail.com](mailto:zecryne@gmail.com).
+If you're an authorized user and don't have the password, please contact us at [fresh@iwantveggies.com](mailto:fresh@iwantveggies.com).
 
 ## Deployment
 
-When deploying updates to the live site:
+The site is automatically updated twice daily using GitHub Actions. When deploying manual updates to the live site:
 
 1. Make sure all changes are committed and pushed to the main branch.
-2. Run the StatiCrypt encryption on your `index.html` file.
-3. Commit the encrypted `index.html` file.
+2. Run the StatiCrypt encryption on your `indexworking.html` file to generate the encrypted `index.html`.
+3. Commit both the `indexworking.html` and the encrypted `index.html` files.
 4. Push to GitHub, which will trigger the GitHub Pages deployment.
 
-Note: Always keep a backup of the unencrypted `index.html` file for future updates.
+## Maintenance Mode
+
+In case you need to take the site offline for maintenance:
+
+1. Rename the current `index.html` to `index_encrypted.html`.
+2. Rename `indexmaintenance.html` to `index.html`.
+3. When maintenance is complete, reverse these steps.
 
 ## Acknowledgements
 
 - [Font Awesome](https://fontawesome.com) for icons
 - [Google Sheets API](https://developers.google.com/sheets/api) for data management
 - [StatiCrypt](https://github.com/robinmoisson/staticrypt) for password protection
+
+## Contact
+
+For any queries or support, please contact us at [fresh@iwantveggies.com](mailto:fresh@iwantveggies.com) or via WhatsApp at +65 8768 0491.

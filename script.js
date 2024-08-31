@@ -11,17 +11,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorMessage = document.getElementById("errorMessage");
   const backToTopButton = document.getElementById("backToTop");
   const noResultsMessage = document.getElementById("noResults");
+  const copyToClipboardBtn = document.getElementById("copyToClipboard");
 
   let allProducts = [];
   let currentSortColumn = null;
   let isAscending = true;
   let currentSearchTerm = "";
   let isPreparingPrint = false;
+  let selectedProducts = new Map(); // Store selected products and their quantities
 
-  // Show loading spinner
   loadingSpinner.style.display = "block";
 
-  // Fetch data from products.json
   fetch("products.json")
     .then((response) => {
       if (!response.ok) {
@@ -50,7 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
     removeAnimationClasses();
     let displayedProducts = allProducts;
 
-    // Apply search filter
     if (currentSearchTerm) {
       displayedProducts = displayedProducts.filter((product) =>
         product.productName
@@ -59,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    // Apply sort
     if (currentSortColumn) {
       displayedProducts.sort((a, b) => {
         if (currentSortColumn === "indent") {
@@ -71,12 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
               ? 1
               : -1;
         } else if (currentSortColumn === "salesPrice") {
-          const priceA = parseFloat(
-            a[currentSortColumn].replace(/[^0-9.-]+/g, ""),
-          );
-          const priceB = parseFloat(
-            b[currentSortColumn].replace(/[^0-9.-]+/g, ""),
-          );
+          const priceA =
+            parseFloat(a[currentSortColumn].replace(/[^0-9.-]+/g, "")) || 0;
+          const priceB =
+            parseFloat(b[currentSortColumn].replace(/[^0-9.-]+/g, "")) || 0;
           return isAscending ? priceA - priceB : priceB - priceA;
         }
         return isAscending
@@ -99,18 +95,112 @@ document.addEventListener("DOMContentLoaded", () => {
       const fragment = document.createDocumentFragment();
       products.forEach((product) => {
         const row = document.createElement("tr");
+        const isSelected = selectedProducts.has(product.productName);
+        const quantity = isSelected
+          ? selectedProducts.get(product.productName).quantity
+          : 1;
+        const isKg = product.unitOfMeasure === "/KG";
         row.innerHTML = `
+          <td class="checkbox-column no-print">
+            <input type="checkbox" class="product-checkbox" data-product='${JSON.stringify(product)}' ${isSelected ? "checked" : ""}>
+          </td>
           <td>${product.productName}</td>
           <td>${product.unitOfMeasure}</td>
-          <td>${product.salesPrice}</td>
-          <td style="text-align: left !important; padding-left: 20px !important;">${
-            product.indent ? "✓" : ""
-          }</td>
+          <td>${product.salesPrice || "(Check with Customer Service for Pricing)"}</td>
+          <td>
+            <input type="number" class="quantity-input" value="${quantity}" min="1" step="1" ${isKg ? 'data-kg="true"' : ""} style="width: 60px;">
+          </td>
+          <td style="text-align: left !important; padding-left: 20px !important;">${product.indent ? "✓" : ""}</td>
         `;
         fragment.appendChild(row);
       });
       productTable.appendChild(fragment);
       productTable.classList.add("fade-in");
+      attachEventListeners();
+    }
+  }
+
+  function attachEventListeners() {
+    document.querySelectorAll(".product-checkbox").forEach((checkbox) => {
+      checkbox.addEventListener("change", updateSelectedProducts);
+    });
+
+    document.querySelectorAll(".quantity-input").forEach((input) => {
+      input.addEventListener("input", handleQuantityInput);
+      input.addEventListener("blur", cleanupQuantityInput);
+      input.addEventListener("change", updateSelectedProducts);
+    });
+  }
+
+  function handleQuantityInput(event) {
+    const input = event.target;
+    if (input.dataset.kg === "true") {
+      // Allow any input for /KG items, including decimals
+      let value = input.value;
+      // Remove any non-digit or non-decimal characters, but allow multiple decimal points for now
+      value = value.replace(/[^0-9.]/g, "");
+      input.value = value;
+    } else {
+      // Only allow whole numbers for non-/KG items
+      input.value = input.value.replace(/[^0-9]/g, "");
+    }
+  }
+
+  function cleanupQuantityInput(event) {
+    const input = event.target;
+    if (input.dataset.kg === "true") {
+      let value = input.value;
+      // Remove leading zeros
+      value = value.replace(/^0+/, "");
+      // Ensure there's only one decimal point
+      const parts = value.split(".");
+      if (parts.length > 2) {
+        value = parts[0] + "." + parts.slice(1).join("");
+      }
+      // Limit to one decimal place
+      if (parts.length === 2 && parts[1].length > 1) {
+        value = parts[0] + "." + parts[1].slice(0, 1);
+      }
+      // If the value is just a decimal point, prepend a zero
+      if (value === ".") {
+        value = "0.";
+      }
+      // If the value ends with a decimal point, remove it
+      if (value.endsWith(".")) {
+        value = value.slice(0, -1);
+      }
+      input.value = value || "0"; // Default to '0' if empty
+    }
+    updateSelectedProducts({ target: input });
+  }
+
+  function updateSelectedProducts(event) {
+    const row = event.target.closest("tr");
+    const checkbox = row.querySelector(".product-checkbox");
+    const quantityInput = row.querySelector(".quantity-input");
+    const product = JSON.parse(checkbox.dataset.product);
+
+    let quantity;
+    if (product.unitOfMeasure === "/KG") {
+      quantity = parseFloat(quantityInput.value) || 0;
+    } else {
+      quantity = parseInt(quantityInput.value, 10) || 0;
+    }
+
+    if (quantity > 0) {
+      checkbox.checked = true;
+      selectedProducts.set(product.productName, {
+        quantity: quantity,
+        product: product,
+      });
+    } else {
+      checkbox.checked = false;
+      selectedProducts.delete(product.productName);
+    }
+
+    // If the event was triggered by changing the quantity, update the checkbox
+    if (event.target.classList.contains("quantity-input")) {
+      checkbox.checked = quantity > 0;
     }
   }
 
@@ -175,34 +265,19 @@ document.addEventListener("DOMContentLoaded", () => {
   downloadBtn.addEventListener("click", () => {
     if (!isPreparingPrint) {
       isPreparingPrint = true;
-
-      // Store current state
       const originalTableHTML = productTable.innerHTML;
-
-      // Render all products without filters or sorting
       renderProducts(allProducts);
-
-      // Update all dates (including the print date)
       updateAllDates();
-
-      // Temporarily remove dark mode for printing
       const isDarkMode = document.body.classList.contains("dark-mode");
       if (isDarkMode) {
         document.body.classList.remove("dark-mode");
       }
-
-      // Use setTimeout to allow the DOM to update before printing
       setTimeout(() => {
         window.print();
-
-        // After printing, restore the original state
         productTable.innerHTML = originalTableHTML;
-
-        // Restore dark mode if it was active
         if (isDarkMode) {
           document.body.classList.add("dark-mode");
         }
-
         isPreparingPrint = false;
       }, 100);
     }
@@ -262,7 +337,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // New function to update all date elements
   function updateAllDates() {
     const currentDate = getCurrentDate();
     const dateElements = document.querySelectorAll(
@@ -273,8 +347,103 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Call this function when the page loads
   updateAllDates();
+
+  copyToClipboardBtn.addEventListener("click", () => {
+    if (selectedProducts.size === 0) {
+      alert("Please select at least one product.");
+      return;
+    }
+
+    let clipboardText = "🛒 Your Order Summary:\n\n";
+    let totalPrice = 0;
+
+    selectedProducts.forEach(({ quantity, product }, productName) => {
+      const price = parseFloat(product.salesPrice?.replace(/[^0-9.-]+/g, ""));
+      const productQuantity =
+        product.unitOfMeasure === "/KG"
+          ? parseFloat(quantity)
+          : parseInt(quantity, 10);
+
+      clipboardText += `${product.productName}/${product.unitOfMeasure}: `;
+
+      if (isNaN(price)) {
+        clipboardText += "(Check with Customer Service for Pricing)";
+      } else {
+        const productTotal = price * productQuantity;
+        totalPrice += productTotal;
+        clipboardText += `$${price.toFixed(2)}, Quantity: ${formatQuantity(productQuantity, product.unitOfMeasure)}, Total: $${productTotal.toFixed(2)}`;
+      }
+
+      clipboardText += "\n----------------------------------------\n";
+    });
+
+    const shippingPrice = totalPrice < 80 ? 8 : 0;
+    const finalTotal = totalPrice + shippingPrice;
+
+    clipboardText += "\n📦 Shipping Information:\n";
+    if (shippingPrice === 0) {
+      clipboardText += "   • Free Shipping (Order Value above $80)\n";
+    } else {
+      clipboardText +=
+        "   • $8 (Shipping fee applies for order values below $80)\n";
+    }
+
+    clipboardText += "\n💰 Order Summary:\n";
+    clipboardText += `   • Subtotal: $${totalPrice.toFixed(2)}\n`;
+    clipboardText += `   • Shipping: $${shippingPrice.toFixed(2)}\n`;
+    clipboardText += `   • Total: $${finalTotal.toFixed(2)}\n\n`;
+
+    clipboardText +=
+      "⚠️ Disclaimer: The prices listed are estimates for reference only and are subject to changes.\n\n";
+
+    clipboardText +=
+      "Thank you for your order! Please send this text to our WhatsApp for processing.";
+
+    navigator.clipboard
+      .writeText(clipboardText)
+      .then(() => {
+        showCustomAlert();
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+        alert("Failed to copy text. Please try again.");
+      });
+  });
+
+  function showCustomAlert() {
+    const modal = document.getElementById("customAlert");
+    const closeBtn = document.getElementById("closeModal");
+
+    modal.style.display = "block";
+
+    closeBtn.onclick = function () {
+      modal.style.display = "none";
+    };
+
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    };
+  }
+
+  window.addEventListener("beforeunload", function (e) {
+    if (selectedProducts.size > 0) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
+  function formatQuantity(quantity, unitOfMeasure) {
+    if (unitOfMeasure === "/KG") {
+      // For /KG items, show one decimal place if it's not a whole number
+      return quantity % 1 === 0 ? quantity.toFixed(0) : quantity.toFixed(1);
+    } else {
+      // For non-/KG items, always show as whole numbers
+      return quantity.toFixed(0);
+    }
+  }
 });
 
 function getCurrentDate() {

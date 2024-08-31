@@ -2,7 +2,10 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
         <title>IWantVeggies Wholesale Pricing</title>
         <meta
             name="description"
@@ -69,6 +72,7 @@
                 <table id="productTable">
                     <thead>
                         <tr>
+                            <th class="checkbox-column no-print"></th>
                             <th data-column="productName">
                                 Product <i class="fas fa-sort"></i>
                             </th>
@@ -78,6 +82,7 @@
                             <th data-column="salesPrice">
                                 Price <i class="fas fa-sort"></i>
                             </th>
+                            <th>QTY</th>
                             <th data-column="indent">
                                 Indent <i class="fas fa-sort"></i>
                             </th>
@@ -129,21 +134,23 @@
                 <p>Pricelist generated on: <span id="generatedDate"></span></p>
             </div>
         </footer>
-        <div class="bottom-search">
-            <input
-                type="text"
-                id="bottomSearchBar"
-                placeholder="Search products..."
-                aria-label="Search products"
-            />
-            <button id="bottomClearSearch" aria-label="Clear search">
-                <i class="fas fa-times"></i>
-            </button>
+        <div class="bottom-bar">
+            <div class="bottom-search">
+                <input
+                    type="text"
+                    id="bottomSearchBar"
+                    placeholder="Search products..."
+                    aria-label="Search products"
+                />
+                <button id="bottomClearSearch" aria-label="Clear search">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <button id="copyToClipboard" class="copy-button">Copy Order</button>
         </div>
         <button id="backToTop" aria-label="Back to top">
             <i class="fas fa-arrow-up"></i>
         </button>
-        <script src="script.js"></script>
         <div class="print-footer">
             <div class="note">
                 <p><strong>Note:</strong></p>
@@ -176,5 +183,32 @@
                 </p>
             </div>
         </div>
+        <div id="customAlert" class="modal">
+            <div class="modal-content">
+                <h2>Order Copied!</h2>
+                <p>Your order has been copied to the clipboard.</p>
+                <p>Next steps:</p>
+                <ol>
+                    <li>Open WhatsApp</li>
+                    <li>Start a chat with IWantVeggies</li>
+                    <li>Paste the order details</li>
+                    <li>Send the message to complete your order</li>
+                </ol>
+                <p>
+                    <strong>Disclaimer:</strong> The prices copied are estimates
+                    for reference only and are subject to changes.
+                </p>
+                <div class="modal-buttons">
+                    <a
+                        href="https://wa.me/+6587680491"
+                        target="_blank"
+                        class="whatsapp-btn"
+                        >WhatsApp</a
+                    >
+                    <button id="closeModal">Dismiss</button>
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
     </body>
 </html>
