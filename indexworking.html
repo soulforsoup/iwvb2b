@@ -21,6 +21,12 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
         />
+        <link rel="manifest" href="manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <meta name="apple-mobile-web-app-title" content="IWV Pricing" />
+        <link rel="apple-touch-icon" href="/images/icon-192x192.png" />
+        <meta name="theme-color" content="#009048" />
     </head>
     <body>
         <div class="print-header">
@@ -210,5 +216,25 @@
             </div>
         </div>
         <script src="script.js"></script>
+        <script>
+            if ("serviceWorker" in navigator) {
+                window.addEventListener("load", () => {
+                    navigator.serviceWorker
+                        .register("/service-worker.js")
+                        .then((registration) => {
+                            console.log(
+                                "Service Worker registered:",
+                                registration,
+                            );
+                        })
+                        .catch((error) => {
+                            console.log(
+                                "Service Worker registration failed:",
+                                error,
+                            );
+                        });
+                });
+            }
+        </script>
     </body>
 </html>
