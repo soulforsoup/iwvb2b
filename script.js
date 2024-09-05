@@ -13,6 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const noResultsMessage = document.getElementById("noResults");
   const copyToClipboardBtn = document.getElementById("copyToClipboard");
 
+  const MAX_RETRIES = 3;
+  const TIMEOUT = 10000; // 10 seconds
+  const CACHE_KEY = "iwvProductsCache";
+  const CACHE_EXPIRY = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+
   let allProducts = [];
   let currentSortColumn = null;
   let isAscending = true;
@@ -20,31 +25,109 @@ document.addEventListener("DOMContentLoaded", () => {
   let isPreparingPrint = false;
   let selectedProducts = new Map(); // Store selected products and their quantities
 
-  loadingSpinner.style.display = "block";
+  async function fetchWithTimeout(url, timeout) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(id);
+      return response;
+    } catch (error) {
+      clearTimeout(id);
+      throw error;
+    }
+  }
 
-  fetch("products.json")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
+  async function fetchProductsWithRetry(url, retries = MAX_RETRIES) {
+    try {
+      const response = await fetchWithTimeout(url, TIMEOUT);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      // Cache the successful response
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({
+          timestamp: Date.now(),
+          data: data,
+        }),
+      );
+      return data;
+    } catch (error) {
+      if (retries > 0) {
+        console.log(
+          `Retrying... (${MAX_RETRIES - retries + 1}/${MAX_RETRIES})`,
+        );
+        return fetchProductsWithRetry(url, retries - 1);
+      } else {
+        throw error;
       }
-      return response.json();
-    })
-    .then((data) => {
+    }
+  }
+
+  function getCachedData() {
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    if (cachedData) {
+      const { timestamp, data } = JSON.parse(cachedData);
+      if (Date.now() - timestamp < CACHE_EXPIRY) {
+        return data;
+      }
+    }
+    return null;
+  }
+
+  function showLoadingSpinner() {
+    loadingSpinner.style.display = "block";
+    setTimeout(() => {
+      if (loadingSpinner.style.display === "block") {
+        loadingSpinner.classList.add("visible");
+      }
+    }, 200);
+  }
+
+  function hideLoadingSpinner() {
+    loadingSpinner.classList.remove("visible");
+    setTimeout(() => {
       loadingSpinner.style.display = "none";
+    }, 300);
+  }
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = "block";
+  }
+
+  async function loadProducts(forceRefresh = false) {
+    showLoadingSpinner();
+
+    try {
+      let data;
+      if (!forceRefresh) {
+        data = getCachedData();
+      }
+
+      if (!data) {
+        data = await fetchProductsWithRetry(
+          "https://raw.githubusercontent.com/soulforsoup/iwvb2bproducts/main/whole%20list/products.json",
+        );
+      }
+
       if (data && data.length) {
         allProducts = data;
         console.log("Loaded products:", allProducts);
         updateProductDisplay();
       } else {
-        throw new Error("No data found in products.json");
+        throw new Error("No data found in the response");
       }
-    })
-    .catch((error) => {
-      loadingSpinner.style.display = "none";
-      console.error("Error fetching data:", error);
-      errorMessage.textContent = "Error loading data. Please try again later.";
-      errorMessage.style.display = "block";
-    });
+    } catch (error) {
+      console.error("Error loading data:", error);
+      showError(
+        `Error loading data: ${error.message}. Please try again later.`,
+      );
+    } finally {
+      hideLoadingSpinner();
+    }
+  }
 
   function updateProductDisplay() {
     removeAnimationClasses();
@@ -98,20 +181,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const isSelected = selectedProducts.has(product.productName);
         const quantity = isSelected
           ? selectedProducts.get(product.productName).quantity
-          : 1;
+          : 0;
         const isKg = product.unitOfMeasure === "/KG";
         row.innerHTML = `
-          <td class="checkbox-column no-print">
-            <input type="checkbox" class="product-checkbox" data-product='${JSON.stringify(product)}' ${isSelected ? "checked" : ""}>
-          </td>
-          <td>${product.productName}</td>
-          <td>${product.unitOfMeasure}</td>
-          <td>${product.salesPrice || "(Check with Customer Service for Pricing)"}</td>
-          <td>
-            <input type="number" class="quantity-input" value="${quantity}" min="1" step="1" ${isKg ? 'data-kg="true"' : ""} style="width: 60px;">
-          </td>
-          <td style="text-align: left !important; padding-left: 20px !important;">${product.indent ? "✓" : ""}</td>
-        `;
+                    <td class="checkbox-column no-print">
+                        <input type="checkbox" class="product-checkbox" data-product='${JSON.stringify(product)}' ${isSelected ? "checked" : ""}>
+                    </td>
+                    <td>${product.productName}</td>
+                    <td>${product.unitOfMeasure}</td>
+                    <td>${product.salesPrice || "(Check with Customer Service for Pricing)"}</td>
+                    <td>
+                        <input type="number" class="quantity-input" value="${quantity}" min="0" step="1" ${isKg ? 'data-kg="true"' : ""} style="width: 60px;">
+                    </td>
+                    <td style="text-align: left !important; padding-left: 20px !important;">${product.indent ? "✓" : ""}</td>
+                `;
         fragment.appendChild(row);
       });
       productTable.appendChild(fragment);
@@ -134,43 +217,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function handleQuantityInput(event) {
     const input = event.target;
+    const checkbox = input.closest("tr").querySelector(".product-checkbox");
+
     if (input.dataset.kg === "true") {
-      // Allow any input for /KG items, including decimals
       let value = input.value;
-      // Remove any non-digit or non-decimal characters, but allow multiple decimal points for now
-      value = value.replace(/[^0-9.]/g, "");
+      // Allow digits and one decimal point anywhere
+      value = value.replace(/[^\d.]/g, "");
+
+      // Ensure only one decimal point
+      const parts = value.split(".");
+      if (parts.length > 2) {
+        value = parts[0] + "." + parts.slice(1).join("");
+      }
+
       input.value = value;
     } else {
-      // Only allow whole numbers for non-/KG items
-      input.value = input.value.replace(/[^0-9]/g, "");
+      input.value = input.value.replace(/\D/g, "");
+    }
+
+    // Ensure checkbox is checked if quantity is greater than 0
+    if (parseFloat(input.value) > 0) {
+      checkbox.checked = true;
+    } else {
+      checkbox.checked = false;
     }
   }
 
   function cleanupQuantityInput(event) {
     const input = event.target;
+    const checkbox = input.closest("tr").querySelector(".product-checkbox");
+
     if (input.dataset.kg === "true") {
       let value = input.value;
+
       // Remove leading zeros
       value = value.replace(/^0+/, "");
-      // Ensure there's only one decimal point
-      const parts = value.split(".");
-      if (parts.length > 2) {
-        value = parts[0] + "." + parts.slice(1).join("");
+
+      // If it's empty, set to 0
+      if (value === "" || value === ".") {
+        value = "0";
+      } else if (value.startsWith(".")) {
+        // If it starts with a decimal point, add a leading zero
+        value = "0" + value;
       }
-      // Limit to one decimal place
-      if (parts.length === 2 && parts[1].length > 1) {
-        value = parts[0] + "." + parts[1].slice(0, 1);
-      }
-      // If the value is just a decimal point, prepend a zero
-      if (value === ".") {
-        value = "0.";
-      }
-      // If the value ends with a decimal point, remove it
+
+      // Remove trailing decimal point
       if (value.endsWith(".")) {
         value = value.slice(0, -1);
       }
-      input.value = value || "0"; // Default to '0' if empty
+
+      // Limit to one decimal place if there's a decimal point
+      const parts = value.split(".");
+      if (parts.length > 1) {
+        value = parts[0] + "." + parts[1].substring(0, 1);
+      }
+
+      input.value = value;
+    } else {
+      input.value = Math.max(0, parseInt(input.value) || 0);
     }
+
+    const quantity = parseFloat(input.value) || 0;
+    if (quantity === 0) {
+      checkbox.checked = false;
+      input.value = "0";
+    } else {
+      checkbox.checked = true;
+    }
+
     updateSelectedProducts({ target: input });
   }
 
@@ -187,20 +301,30 @@ document.addEventListener("DOMContentLoaded", () => {
       quantity = parseInt(quantityInput.value, 10) || 0;
     }
 
-    if (quantity > 0) {
-      checkbox.checked = true;
-      selectedProducts.set(product.productName, {
-        quantity: quantity,
-        product: product,
-      });
+    if (event.target.type === "checkbox") {
+      if (checkbox.checked) {
+        quantity = quantity || 1;
+        quantityInput.value = quantity;
+        selectedProducts.set(product.productName, {
+          quantity: quantity,
+          product: product,
+        });
+      } else {
+        selectedProducts.delete(product.productName);
+        quantityInput.value = "0";
+      }
     } else {
-      checkbox.checked = false;
-      selectedProducts.delete(product.productName);
-    }
-
-    // If the event was triggered by changing the quantity, update the checkbox
-    if (event.target.classList.contains("quantity-input")) {
-      checkbox.checked = quantity > 0;
+      if (quantity > 0) {
+        checkbox.checked = true;
+        selectedProducts.set(product.productName, {
+          quantity: quantity,
+          product: product,
+        });
+      } else {
+        checkbox.checked = false;
+        selectedProducts.delete(product.productName);
+        quantityInput.value = "0";
+      }
     }
   }
 
@@ -347,8 +471,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  updateAllDates();
-
   copyToClipboardBtn.addEventListener("click", () => {
     if (selectedProducts.size === 0) {
       alert("Please select at least one product.");
@@ -437,13 +559,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatQuantity(quantity, unitOfMeasure) {
     if (unitOfMeasure === "/KG") {
-      // For /KG items, show one decimal place if it's not a whole number
-      return quantity % 1 === 0 ? quantity.toFixed(0) : quantity.toFixed(1);
+      return quantity % 1 === 0 ? quantity.toString() : quantity.toFixed(1);
     } else {
-      // For non-/KG items, always show as whole numbers
-      return quantity.toFixed(0);
+      return quantity.toString();
     }
   }
+
+  // Initial load
+  loadProducts();
 });
 
 function getCurrentDate() {
